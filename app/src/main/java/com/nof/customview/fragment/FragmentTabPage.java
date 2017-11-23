@@ -25,7 +25,7 @@ public class FragmentTabPage extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        int layout = getResources().getIdentifier("temp", "layout",
+        int layout = getResources().getIdentifier("fragment", "layout",
                 getPackageName());
         setContentView(layout);
         mTabs = findViewById(

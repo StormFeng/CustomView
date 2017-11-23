@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="ProgressView">
-        <attr name="progressColor" format="color|reference"></attr>
-        <attr name="progressItemLength" format="dimension"></attr>
+        <attr name="progressColor" format="color|reference"/>
+        <attr name="progressItemLength" format="dimension"/>
+    </declare-styleable>
+    <declare-styleable name="RadiusButton">
+        <attr name="button_radius" format="dimension"/>
+        <attr name="button_pressColor" format="color|reference"/>
+        <attr name="button_unpressColor" format="color|reference"/>
     </declare-styleable>
 </resources>
