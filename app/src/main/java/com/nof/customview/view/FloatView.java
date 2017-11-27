@@ -2,8 +2,13 @@ package com.nof.customview.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+
+import com.nof.customview.R;
 
 /**
  * Created by Administrator on 2017/11/22.
@@ -12,6 +17,8 @@ import android.widget.RelativeLayout;
 public class FloatView extends RelativeLayout {
 
     private FloatButton mButton;
+    private View mItemsLeft;
+    private View mItemsRight;
 
     public FloatView(Context context) {
         this(context,null);
@@ -32,17 +39,47 @@ public class FloatView extends RelativeLayout {
     }
 
     private void init(Context context){
-        RelativeLayout rl = new RelativeLayout(context);
+        LinearLayout mContain = new LinearLayout(context);
         LayoutParams p = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
-        rl.setLayoutParams(p);
+        p.setLayoutDirection(LinearLayout.HORIZONTAL);
+        mContain.setLayoutParams(p);
 
-        LayoutParams p1 = new LayoutParams(Util.dp2px(50), Util.dp2px(50));
+        LayoutParams pButton = new LayoutParams(Util.dp2px(50), Util.dp2px(50));
         mButton = new FloatButton(context);
-        mButton.setLayoutParams(p1);
+        mButton.setLayoutParams(pButton);
 
-        rl.addView(mButton);
-        addView(rl);
+        mItemsLeft = LayoutInflater.from(context).inflate(R.layout.layout_item,null);
+        mItemsLeft.setMinimumHeight(Util.dp2px(50));
+        mItemsRight = LayoutInflater.from(context).inflate(R.layout.layout_item,null);
+        mItemsRight.setMinimumHeight(Util.dp2px(50));
+        mItemsRight.setVisibility(GONE);
+
+        mContain.addView(mItemsRight);
+        mContain.addView(mButton);
+        mContain.addView(mItemsLeft);
+
+        addView(mContain);
+
+        mButton.setOnButtonClickListener(new FloatButton.OnButtonClickListener() {
+            @Override
+            public void onClick(boolean show, boolean left) {
+                if(show){
+                    if(left){
+                        mItemsLeft.setVisibility(VISIBLE);
+                        mItemsRight.setVisibility(GONE);
+                    }else{
+                        mItemsRight.setVisibility(VISIBLE);
+                        mItemsLeft.setVisibility(GONE);
+                    }
+                    mButton.setShowItem(false);
+                }else{
+                    mItemsLeft.setVisibility(GONE);
+                    mItemsRight.setVisibility(GONE);
+                    mButton.setShowItem(true);
+                }
+            }
+        });
     }
 }
 
