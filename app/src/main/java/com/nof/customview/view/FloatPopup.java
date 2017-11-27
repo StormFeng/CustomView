@@ -1,9 +1,12 @@
 package com.nof.customview.view;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Handler;
+import android.os.Message;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,29 +16,44 @@ import android.widget.PopupWindow;
 
 import com.nof.customview.R;
 
+
 /**
  * Created by Administrator on 2017/11/27.
  */
 
 public class FloatPopup extends PopupWindow implements FloatPopupItem.OnItemClickListener {
 
-    int size = Util.dp2px(50);
-    int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-    int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
-    int touchSlop = new ViewConfiguration().getScaledTouchSlop();
-    float curX,curY;
-    float lastX,lastY;
-    float showX,showY;
-    boolean showMenu = false;
-    boolean showLeft = true;
-    FloatPopupItem item;
-    Activity context;
-    OnClickListener onClickListener;
+    private int size = Util.dp2px(50);
+    private int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+    private int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+    private int touchSlop = new ViewConfiguration().getScaledTouchSlop();
+    private float curX,curY;
+    private float lastX,lastY;
+    private float showX,showY;
+    private boolean showMenu = false;
+    private boolean showLeft = true;
+    private FloatPopupItem item;
+    private Activity context;
+    private OnClickListener onClickListener;
+    private Handler handler;
+    private Message message;
 
+    @SuppressLint("HandlerLeak")
     public FloatPopup(Context context) {
         this.context = (Activity) context;
         item = new FloatPopupItem(context);
         item.setOnItemClickListener(this);
+        handler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                if(!showMenu){
+                    toSmallIcon(msg.arg1,msg.arg2);
+                }
+            }
+        };
+        message = handler.obtainMessage();
+        message.what = 0;
 
         ImageView iv = new ImageView(context);
         iv.setMinimumWidth(Util.dp2px(50));
@@ -58,9 +76,21 @@ public class FloatPopup extends PopupWindow implements FloatPopupItem.OnItemClic
                         lastY = event.getRawY();
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        update((int)event.getRawX() - size/2,(int)event.getRawY()-size/2);
+//                        float ddx = lastX - curX;
+//                        float ddy = lastY - curY;
+//                        if(Math.abs(ddx)<touchSlop && Math.abs(ddy)<touchSlop){
+//                            return true;
+//                        }
+                        if(curY<size/2){
+                            update((int)event.getRawX() - size/2,0);
+                        }else if(curY>screenHeight-size/2){
+                            update((int)event.getRawX() - size/2,screenHeight-size);
+                        }else{
+                            update((int)event.getRawX() - size/2,(int)event.getRawY()-size/2);
+                        }
                         if(item.isShowing()){
                             item.dismiss();
+                            showMenu = !showMenu;
                         }
                         break;
                     case MotionEvent.ACTION_UP:
@@ -68,13 +98,12 @@ public class FloatPopup extends PopupWindow implements FloatPopupItem.OnItemClic
                             showLeft = true;
                             showX = 0;
                             showY = event.getRawY()-size/2;
-                            update((int) showX,(int) showY);
                         }else{
                             showLeft = false;
                             showX = screenWidth-size;
                             showY = event.getRawY()-size/2;
-                            update((int) showX,(int) showY);
                         }
+                        update((int) showX,(int) showY);
 
                         float dx = lastX - curX;
                         float dy = lastY - curY;
@@ -88,11 +117,28 @@ public class FloatPopup extends PopupWindow implements FloatPopupItem.OnItemClic
                             }
                             showMenu = !showMenu;
                         }
+
+                        handler.removeMessages(0);
+
+                        message = handler.obtainMessage();
+                        message.what = 0;
+                        message.arg1 = (int) showX;
+                        message.arg2 = (int) showY;
+                        handler.sendMessageDelayed(message,5000);
+                        System.out.println("oooooooooooooo");
                         break;
                 }
                 return true;
             }
         });
+    }
+
+    private void toSmallIcon(int curx,int cury){
+        if(showLeft){
+            update(curx,cury,size/2,size/2);
+        }else{
+            update(curx+size/2,cury,size/2,size/2);
+        }
     }
 
     private void hideMenu() {
